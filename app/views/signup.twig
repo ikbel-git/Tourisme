@@ -1,0 +1,33 @@
+<html>
+  <body>
+    <h1>Signup</h1>
+    <form onsubmit="signup(); return false;">
+      <label for="username">Username:</label>
+      <input type="text" id="username" required><br>
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" required><br>
+
+      <button type="submit">Signup</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const socket = io();
+
+      // Handle signup response
+      socket.on("signupResponse", (data) => {
+        alert(data.message);
+        console.log("New User:", data.user);
+      });
+
+      // Function to send signup data to the server
+      function signup() {
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        socket.emit("signup", { username, password });
+      }
+    </script>
+  </body>
+</html>
