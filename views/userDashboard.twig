@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>
+			Menu</title>
+		<style>
+			body {
+				margin: 0;
+				font-family: Arial, sans-serif;
+			}
+			nav {
+				width: 200px;
+				background-color: #b3ffe0;
+				padding: 10px;
+				position: fixed;
+				height: 100%;
+				overflow: auto;
+			}
+
+			nav a {
+				display: block;
+				color: black;
+				padding: 14px 8px;
+				text-decoration: none;
+			}
+			nav a:hover {
+				background-color: #ddd;
+				color: black;
+			}
+			section {
+				margin-left: 220px;
+				padding: 16px;
+			}
+			.card {
+				width: 200px;
+				margin: 16px;
+				padding: 16px;
+				border: 1px solid #ddd;
+				border-radius: 8px;
+				background-color: #fff;
+				box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                margin-left: 50%;
+			}
+
+			.card img {
+				width: 100%;
+				border-radius: 4px;
+				margin-bottom: 8px;
+			}
+
+			h2 {
+				color: #2c3e50;
+			}
+		</style>
+		<script src="/socket.io/socket.io.js"></script>
+	</head>
+	<body>
+		<nav>
+			<a href="#home">Tous les utilisateurs</a>
+			<a href="#" id="logout">Déconnexion</a>
+		</nav>
+		<section>
+			<h2>dashbord</h2>
+		</section>
+		<div class="card">
+			<img src="../2.jpeg" alt="Image 1">
+			<h3>Sidi Bou Saïd</h3>
+			<p>Célèbre pour ses rues pavées et ses maisons bleues et blanches, Sidi Bou Saïd est un village pittoresque installé sur un promontoire qui surplombe la mer Méditerranée.</p>
+		</div>
+
+
+		<div class="card" >
+			<img src="../1.jpg" alt="Image 2">
+			<h3>Tozeur</h3>
+			<p>Tozeur est une ville tunisienne aux confins de l'Atlas et du désert du Sahara, la plus grande des cinq oasis que compte le Jérid.</p>
+		</div>
+		<script>
+			const socket = io();
+document.getElementById('logout').addEventListener('click', function () {
+socket.emit('logout');
+alert('Logout functionality should go here');
+window.location.href = '/user/login';
+});
+		</script>
+	</body>
+</html>
