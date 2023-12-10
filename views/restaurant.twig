@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurants</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 400px;
+            text-align: center;
+        }
+
+        #navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #5e087d;
+            padding: 10px;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        #navbar button {
+            background-color: #f9f7f7;
+            color: rgb(8, 8, 8);
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #navbar button:hover {
+            background-color: #ddd;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+
+        label {
+            margin: 8px 0;
+            color: #333;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        input[type="submit"], input[type="button"] {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+        input[type="submit"]:hover, input[type="button"]:hover {
+            background-color: #45a049;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        li {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        .centered-table {
+    margin: 0 auto;
+    border: 2px solid #030303;
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px; /* Add margin-top to create space between navbar and table */
+}
+
+.centered-table th, .centered-table td {
+    border: 1px solid #c10d2b;
+    padding: 8px;
+}
+
+.centered-table th {
+    background-color: #0c7a72;
+}
+
+.centered-table td {
+    background-color: #095f84;
+}
+
+.centered-table button {
+    background-color: #0d053b;
+    color: #fff;
+    padding: 8px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+}
+
+.centered-table button:hover {
+    background-color: #0d0543;
+}
+
+.centered-table th, .centered-table td, .centered-table button {
+    text-align: center;
+}
+
+#restaurantTableBody tr:nth-child(even) {
+    background-color: #0c8193;
+}
+        /* Add a new style for the 'hide' class */
+        .hide {
+            display: none;
+        }
+        /* Add styling to hide/show containers */
+        #addRestaurantFormContainer,
+        #restaurantListContainer {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <nav id="navbar">
+            <button onclick="showForm()">Ajouter</button>
+            <button id="consulterBtn" onclick="showRestaurants()">Consulter</button>     
+           </nav>
+       
+
+        <!-- Form for adding a new product -->
+        <div id="addRestaurantFormContainer">
+            <h1>Ajouter un Restaurant</h1>
+        <form id="addRestaurantForm" action="#">
+            <label for="name">Nom du Restaurant:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="localisation">Localisation du Restaurant:</label>
+            <input type="text" id="localisation" name="localisation" required>
+
+
+            <input type="submit" value="Ajouter">
+        </form>
+    </div>
+
+        <!-- Table for displaying products -->
+        <div id="restaurantListContainer">
+            <h1>Liste des Restaurants</h1>
+            <table id="restaurantTable" class="centered-table">
+                <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Localisation</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="restaurantTableBody"></tbody>
+        </table>
+    </div>
+</div>
+    <script>
+                function showForm() {
+            document.getElementById('addRestaurantFormContainer').style.display = 'block';
+            document.getElementById('restaurantListContainer').style.display = 'none';
+        }
+
+        function showProducts() {
+            document.getElementById('addRestaurantFormContainer').style.display = 'none';
+            document.getElementById('restaurantListContainer').style.display = 'block';
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const socket = io();
+        
+            // Function to add a row to the table
+            function addTableRow(restaurant) {
+                const tableBody = document.querySelector('#restaurantTableBody');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${restaurant.name}</td>
+                    <td>${restaurant.localisation}</td>
+                    <td>
+                        <button onclick="updateRestaurant('${restaurant._id}')">Modifier</button>
+                        <button onclick="deleteRestaurant('${restaurant._id}')">Supprimer</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            }
+        
+            // Event listener for produitAdded
+            socket.on('restaurantAdded', (restaurant) => {
+                // Check if the product already exists in the table
+                const existingRow = document.querySelector(`#restaurantTableBody td:contains('${restaurant.name}')`);
+                if (!existingRow) {
+                    addTableRow(restaurant);
+                }
+            });
+        
+
+        
+            // Event listener for getProduits
+            socket.on('getRestaurants', (restaurant) => {
+                socket.emit();
+
+                const tableBody = document.querySelector('#restaurantTableBody');
+                tableBody.innerHTML = '';
+        
+                restaurants.forEach((restaurant) => {
+                    addTableRow(restaurant);
+                });
+            });
+        
+            // Event listener for getProduitsError (optional, handle errors)
+            socket.on('getRestaurantsError', (error) => {
+                console.error('Error fetching restaurants:', error);
+                // Handle the error, e.g., display an error message to the user
+            });
+        
+            // Submit form to add a new product
+            document.getElementById('addRestaurantForm').addEventListener('submit', submitForm);
+        
+            // Function to update a product
+           
+            // Event listener for the "Consulter" button
+            document.getElementById('consulterBtn').addEventListener('click', showRestaurants);
+        
+            function showRestaurants() {
+                // Emit getProduits to fetch and display all products
+                socket.emit('getRestaurants');
+            }
+        
+            function submitForm(event) {
+                event.preventDefault();
+                const name = document.getElementById('name').value;
+                const localisation = document.getElementById('localisation').value;
+        
+                // Send data to the server to handle database insertion
+                socket.emit('msg', { type: 'restaurant', object: { name, localisation } });
+            }
+        
+            // Custom jQuery contains case-insensitive
+            jQuery.expr[':'].contains = function (a, i, m) {
+                return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+            };
+        });
+        </script>
+        
+
+</body>
+
+</html>
