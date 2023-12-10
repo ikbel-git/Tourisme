@@ -1,4 +1,4 @@
-const User = require("../model/user");
+const User = require("../models/user");
 const mongoose = require('mongoose');
 
 async function add(data, callback) {

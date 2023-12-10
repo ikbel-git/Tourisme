@@ -1,6 +1,6 @@
 const mongo = require("mongoose");
 const Schema = mongo.Schema;
-const User = new Schema({
+const UserTwig = new Schema({
     username: String,
     email: String,
     password: String,
@@ -10,4 +10,4 @@ const User = new Schema({
     },
 
 });
-module.exports = mongo.model("user", User);
+module.exports = mongo.model("user", UserTwig);

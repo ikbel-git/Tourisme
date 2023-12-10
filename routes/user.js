@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const userController = require("../controller/userController");
-const validate = require("../middl/validate");
+const userController = require("../controllers/userController");
+const validate = require("../middlewares/validate");
 router.post("/addUser", validate, userController.add);
 router.get("/show", userController.show);
 router.put("/update/:id", userController.update);
