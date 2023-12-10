@@ -1,0 +1,42 @@
+<html>
+    <head>
+<script src="/socket.io/socket.io.js"></script>
+    </head>
+    <body>
+        <label>msg:</label>
+        <input type="text" placeholder="write" onkeyup="typing()" id="ch"></input>
+        <button type="submit" onclick="send()">press</button>
+        <script>
+            const socket =io.connect();
+            name=prompt("votre nom");
+            socket.emit("msgs",name);
+            
+            socket.on("typing",(data) => {
+                p=document.createElement("p");
+                p.innerText=data;
+                document.body.appendChild(p);
+            })
+
+            socket.on("msgs",(data) => {
+                p=document.createElement("p");
+                p.innerText=data;
+                document.body.appendChild(p);
+            })
+            socket.on("msg",(data) => {
+                p=document.createElement("p");
+                p.innerText=data;
+                document.body.appendChild(p);
+            })
+            x=document.getElementById("ch");
+            
+            function typing(){
+                socket.emit("typing",name)
+            };
+
+            function send(){
+                console.log("message :"+x.value);
+                socket.emit("msg",{object:x.value,name:name});//tab3ath el objet lil app.js tal9a ligne ikatchilek el data
+            };
+        </script>
+    </body>
+</html>
