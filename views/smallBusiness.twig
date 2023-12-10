@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajout et liste des SmallBusiness</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        /* Navbar styles */
+        nav {
+            position: sticky;
+            top: 0;
+            background-color: #5e087d;
+            padding: 10px;
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 20px;
+            z-index: 100;
+        }
+
+        nav button {
+            background-color: #f9f7f7;
+            color: rgb(8, 8, 8);
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0 10px;
+        }
+
+        nav button:hover {
+            background-color: #ddd;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column; /* Center content vertically */
+            align-items: center; /* Center content horizontally */
+            min-height: 100vh;
+        }
+        
+        #container {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 60%; /* Adjust as needed */
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        label {
+            margin: 8px 0;
+            color: #333;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        input[type="submit"] {
+            background-color: #4caf50;
+            color: #fff;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            width: 50%; /* Adjust as needed */
+        }
+
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+        .centered-table {
+    margin: 0 auto;
+    border: 2px solid #030303;
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px; /* Add margin-top to create space between navbar and table */
+}
+
+.centered-table th, .centered-table td {
+    border: 1px solid #c10d2b;
+    padding: 8px;
+}
+
+.centered-table th {
+    background-color: #0c7a72;
+}
+
+.centered-table td {
+    background-color: #095f84;
+}
+
+.centered-table button {
+    background-color: #0d053b;
+    color: #fff;
+    padding: 8px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+}
+
+.centered-table button:hover {
+    background-color: #0d0543;
+}
+
+.centered-table th, .centered-table td, .centered-table button {
+    text-align: center;
+}
+
+#smallBusinessTableBody tr:nth-child(even) {
+    background-color: #0c8193;
+}
+
+        /* Add styling to hide/show containers */
+        #addSmallBusinessFormContainer,
+        #smallBusinessListContainer {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <!-- Navbar -->
+        <nav>
+            <button onclick="showForm()">Ajouter</button>
+            <button id="consulterBtn" onclick="showSmallBusinesses1()">Consulter</button>
+        </nav>
+
+        <!-- Form for adding SmallBusiness -->
+        <div id="addSmallBusinessFormContainer">
+            <h1>Ajouter un SmallBusiness</h1>
+            <form id="addSmallBusinessForm" onsubmit="submitForm(event)">
+                <label for="name">Nom du SmallBusiness:</label>
+                <input type="text" id="name" name="name" required placeholder="Nom">
+
+                <label for="adresse">Adresse du SmallBusiness:</label>
+                <input type="text" id="adresse" name="adresse" required placeholder="Adresse">
+
+                <label for="contact">Contact du SmallBusiness:</label>
+                <input type="text" id="contact" name="contact" required placeholder="Contact">
+
+                <input type="submit" value="Ajouter">
+            </form>
+        </div>
+
+        <!-- Container for displaying SmallBusinesses with Products -->
+        <div id="smallBusinessListContainer">
+            <h1>Liste des SmallBusiness avec Produits</h1>
+            <table id="smallBusinessTable" class="centered-table">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Adresse</th>
+                    <th>Contact</th>
+                    <th>Produits</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="smallBusinessTableBody"></tbody>
+        </table>
+        </div>
+    </div>
+
+    <script>
+        // Your existing script remains unchanged
+
+        function showForm() {
+            document.getElementById('addSmallBusinessFormContainer').style.display = 'block';
+            document.getElementById('smallBusinessListContainer').style.display = 'none';
+        }
+
+        function showSmallBusinesses1() {
+            document.getElementById('addSmallBusinessFormContainer').style.display = 'none';
+            document.getElementById('smallBusinessListContainer').style.display = 'block';
+        }
+        
+        
+            // Function to add a row to the table
+            function addTableRow(smallBusiness) {
+                const tableBody = document.querySelector('#smallBusinessTableBody');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${smallBusiness.name}</td>
+                    <td>${smallBusiness.adresse}</td>
+                    <td>${smallBusiness.contact}</td>
+                    <td>${smallBusiness.produits}</td>
+                    <td>
+                        <button onclick="updateSmallBusiness('${smallBusiness._id}')">Modifier</button>
+                        <button onclick="deleteSmallBusiness('${smallBusiness._id}')">Supprimer</button>
+
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            }
+        
+            // Event listener for produitAdded
+            socket.on('smallBusinessAdded', (smallBusiness) => {
+                // Check if the product already exists in the table
+                const existingRow = document.querySelector(`#smallBusinessTableBody td:contains('${smallBusiness.name}')`);
+                if (!existingRow) {
+                    addTableRow(smallBusiness);
+                }
+            });
+        
+
+                 // Event listener for produitUpdated
+                 socket.on('smallBusinessUpdated', (data) => {
+                // Implement the logic to update the UI when a product is updated
+                console.log('SmallBusinesses updated:', data);
+            });
+        
+            // Event listener for produitDeleted
+            function deleteSmallBusiness(smallBusinessId) {
+             // Emit an event to the server to handle the delete operation
+            socket.emit('deleteSmallBusiness', { smallBusinessId });
+            }
+
+        
+          // Event listener for getSmallBusinesses
+            socket.on('getSmallBusinesses', (smallBusinesses) => {
+            const tableBody = document.querySelector('#smallBusinessTableBody');
+            tableBody.innerHTML = '';
+
+            smallBusinesses.forEach((smallBusiness) => {
+               addTableRow(smallBusiness);
+            });
+        });
+        
+            // Event listener for getProduitsError (optional, handle errors)
+            socket.on('getSmallBusinessError', (error) => {
+                console.error('Error fetching smallBusinesses:', error);
+                // Handle the error, e.g., display an error message to the user
+            });
+        
+            document.getElementById('addSmallBusinessForm').addEventListener('submit', submitForm);
+
+        
+            // Function to update a product
+            function updateSmallBusiness(smallBusinessId) {
+                // Emit an event to the server to handle the update operation
+                socket.emit('updateSmallBusiness', { smallBusinessId });
+            }
+        
+            // Function to delete a product
+            function deleteSmallBusiness(smallBusinessId) {
+                // Emit an event to the server to handle the delete operation
+                socket.emit('deleteSmallBusiness', { smallBusinessId });
+            }
+        
+            // Event listener for the "Consulter" button
+            document.getElementById('consulterBtn').addEventListener('click', showSmallBusinesses);
+        
+            function showSmallBusinesses() {
+                // Emit getProduits to fetch and display all products
+                socket.emit('getSmallBusinesses');
+            }
+
+        function submitForm(event) {
+            event.preventDefault();
+            const name = document.getElementById('name').value;
+            const adresse = document.getElementById('adresse').value;
+            const contact = document.getElementById('contact').value;
+
+            socket.emit('msg', { type: 'smallBusiness', object: { name, adresse, contact } });
+        }
+    
+    </script>
+</body>
+</html>
