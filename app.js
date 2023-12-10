@@ -1,27 +1,41 @@
-const http = require('http');
-const express=require('express');
+const express = require('express');
 const categorie = require("./routes/categorie");
 const animateur = require("./routes/animateur");
-
-
-var mongo=require('mongoose'); 
-var mongoconnect=require("./config/dbConnection.json");
+const mongo = require('mongoose');
+const mongoconnect = require("./config/dbConnection.json");
 const bodyParser = require('body-parser');
+const path = require('path');
+const http = require('http'); // Importe le module HTTP
 
-mongo.connect(mongoconnect.url,{
-    useNewUrlParser:true,     //affichage a partir de BD (parser URl)
-    useUnifiedTopology:true      //acceder a la BD a partir de topologie exacte
+const app = express();
+const server = http.createServer(app); 
+const io = require('socket.io')(server); 
+
+mongo.connect(mongoconnect.url, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
   })
-  .then(()=>console.log('mongo connected'))
-  .catch((err)=>console.log(err));
+  .then(() => console.log('mongo connected'))
+  .catch((err) => console.log(err));
 
-var app = express();
-
-app.use(bodyParser.urlencoded({extended:true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use("/categorie",categorie);
-app.use("/animateur",animateur);
 
-const server = http.createServer(app);
-   server.listen(3000,console.log("server run"))
-   module.exports= app;
+app.use("/categorie", categorie);
+app.use("/animateur", animateur);
+
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "twig");
+
+io.on('connection', (socket) => {
+  console.log('un animateur connecté');
+  socket.on('animateurAjouter', (data) => {
+    io.emit('animateurNotification', data);
+  });
+});
+
+server.listen(3000, () => {
+  console.log("server run");
+});
+
+module.exports = app;

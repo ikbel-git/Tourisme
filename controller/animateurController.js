@@ -9,10 +9,11 @@ var Animateur = require("../model/animateur");
   
           const animateur = new Animateur(req.body);
           await animateur.save();
-          res.send("Animateur added")
-      }catch (err){
-          console.log(err);
-      }
+          res.status(200).json({ message: 'Successfully added animateur' });
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Failed to add animateur' });
+        }
   }
     async function show(req, res, next) {
       try {

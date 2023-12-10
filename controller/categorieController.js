@@ -7,10 +7,11 @@ var Categorie = require("../model/categorie");
   
           const categorie = new Categorie(req.body);
           await categorie.save();
-          res.send("categorie added")
-      }catch (err){
-          console.log(err);
-      }
+          res.status(200).json({ message: 'Successfully added categorie' });
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ message: 'Failed to add categorie' });
+        }
   }
     async function show(req, res, next) {
       try {
