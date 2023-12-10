@@ -8,15 +8,18 @@ const dbConfig = require("./config/db.config");
 const userRouter = require("./routes/user");
 const app = express();
 const {add}=require("./controller/chatcontroller");
-const {addevent, affichet, additionticket}=require("./controller/eventcontroller");
-const {addticket}=require("./controller/ticketcontroller")
+const {addevent, affichet, additionticket}=require("./controllers/eventcontroller");
+const {addticket}=require("./controllers/ticketcontroller")
 app.use(cors());
-
+const { addsmallBSocket,showSmallBusinesses } = require("./controllers/smallBController");
+const { addProdSocket, updateProduit, deleteProduit,show } = require("./controllers/produitController");
 const {
   authenticate,
   show,
   add,deleteclass
 } = require("./controllers/userController");
+var produitRouter = require("./routes/produits");
+var smallBusinessRouter = require("./routes/smallbusiness");
 const classroomrouter= require("./routes/classroom");
 const eventrouter= require("./routes/evenement");
 const ticketrouter= require("./routes/ticket");
@@ -24,7 +27,8 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "twig");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-
+app.use("/produit", produitRouter);
+app.use("/smallBusiness", smallBusinessRouter);
 // parse requests of content-type - application/json
 app.use(express.json());
 app.use("/user", userRouter);
@@ -153,7 +157,35 @@ socket.on("additionticket", (data) => {
     io.emit("additionticket", data);
 });
 
+socket.on("updateProduit", async (data) => {
+  try {
+      await updateProduit(data.produitId);
+      io.emit("produitUpdated", { produitId: data.produitId });
+  } catch (err) {
+      console.error(err);
+  }
+});
 
+socket.on("deleteProduit", async (data) => {
+  try {
+      await deleteProduit(data.produitId);
+      io.emit("produitDeleted", { produitId: data.produitId });
+  } catch (err) {
+      console.error(err);
+      io.emit("deleteProduitError", { error: "Failed to delete produit", produitId: data.produitId });
+  }
+});
+
+
+socket.on("getProduits", async () => {
+  try {
+      const produits = await show();
+      socket.emit('getProduits', produits);
+  } catch (err) {
+      console.error(err);
+      socket.emit('getProduitsError', { error: 'Internal Server Error' });
+  }
+});
   socket.on("disconnect", () => {
     console.log("user disconnect");
     io.emit("msg", "user disconnect");

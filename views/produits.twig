@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produits</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #container {
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            width: 400px;
+            text-align: center;
+        }
+
+        #navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #5e087d;
+            padding: 10px;
+            border-radius: 0 0 8px 8px;
+            display: flex;
+            justify-content: space-around;
+            z-index: 100;
+        }
+
+        #navbar button {
+            background-color: #f9f7f7;
+            color: rgb(8, 8, 8);
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #navbar button:hover {
+            background-color: #ddd;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            margin-top: 20px;
+        }
+
+        label {
+            margin: 8px 0;
+            color: #333;
+        }
+
+        input {
+            padding: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        input[type="submit"], input[type="button"] {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+        }
+
+        input[type="submit"]:hover, input[type="button"]:hover {
+            background-color: #45a049;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+        }
+
+        li {
+            background-color: #fff;
+            padding: 10px;
+            margin-bottom: 10px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        .centered-table {
+    margin: 0 auto;
+    border: 2px solid #030303;
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 20px; /* Add margin-top to create space between navbar and table */
+}
+
+.centered-table th, .centered-table td {
+    border: 1px solid #c10d2b;
+    padding: 8px;
+}
+
+.centered-table th {
+    background-color: #0c7a72;
+}
+
+.centered-table td {
+    background-color: #095f84;
+}
+
+.centered-table button {
+    background-color: #0d053b;
+    color: #fff;
+    padding: 8px;
+    cursor: pointer;
+    border: none;
+    border-radius: 4px;
+}
+
+.centered-table button:hover {
+    background-color: #0d0543;
+}
+
+.centered-table th, .centered-table td, .centered-table button {
+    text-align: center;
+}
+
+#produitTableBody tr:nth-child(even) {
+    background-color: #0c8193;
+}
+        /* Add a new style for the 'hide' class */
+        .hide {
+            display: none;
+        }
+        /* Add styling to hide/show containers */
+        #addProductFormContainer,
+        #produitListContainer {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <nav id="navbar">
+            <button onclick="showForm()">Ajouter</button>
+            <button id="consulterBtn" onclick="showProducts()">Consulter</button>     
+           </nav>
+       
+
+        <!-- Form for adding a new product -->
+        <div id="addProductFormContainer">
+            <h1>Ajouter un Produit</h1>
+        <form id="addProduitForm" action="#">
+            <label for="name">Nom du produit:</label>
+            <input type="text" id="name" name="name" required>
+
+            <label for="price">Prix du produit:</label>
+            <input type="text" id="price" name="price" required>
+
+            <label for="stock">Stock du produit:</label>
+            <input type="text" id="stock" name="stock" required>
+
+            <input type="submit" value="Ajouter">
+        </form>
+    </div>
+
+        <!-- Table for displaying products -->
+        <div id="produitListContainer">
+            <h1>Liste des Produits</h1>
+            <table id="produitTable" class="centered-table">
+                <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Prix</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="produitTableBody"></tbody>
+        </table>
+    </div>
+</div>
+    <script>
+                function showForm() {
+            document.getElementById('addProductFormContainer').style.display = 'block';
+            document.getElementById('produitListContainer').style.display = 'none';
+        }
+
+        function showProducts() {
+            document.getElementById('addProductFormContainer').style.display = 'none';
+            document.getElementById('produitListContainer').style.display = 'block';
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            const socket = io();
+        
+            // Function to add a row to the table
+            function addTableRow(produit) {
+                const tableBody = document.querySelector('#produitTableBody');
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${produit.name}</td>
+                    <td>${produit.price}</td>
+                    <td>${produit.stock}</td>
+                    <td>
+                        <button onclick="updateProduit('${produit._id}')">Modifier</button>
+                        <button onclick="deleteProduit('${produit._id}')">Supprimer</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            }
+        
+            // Event listener for produitAdded
+            socket.on('produitAdded', (produit) => {
+                // Check if the product already exists in the table
+                const existingRow = document.querySelector(`#produitTableBody td:contains('${produit.name}')`);
+                if (!existingRow) {
+                    addTableRow(produit);
+                }
+            });
+        
+            // Event listener for produitUpdated
+            socket.on('produitUpdated', (data) => {
+                // Implement the logic to update the UI when a product is updated
+                console.log('Produit updated:', data);
+            });
+        
+            // Event listener for produitDeleted
+            function deleteProduit(produitId) {
+             // Emit an event to the server to handle the delete operation
+            socket.emit('deleteProduit', { produitId });
+            }
+
+        
+            // Event listener for getProduits
+            socket.on('getProduits', (produits) => {
+                socket.emit();
+
+                const tableBody = document.querySelector('#produitTableBody');
+                tableBody.innerHTML = '';
+        
+                produits.forEach((produit) => {
+                    addTableRow(produit);
+                });
+            });
+        
+            // Event listener for getProduitsError (optional, handle errors)
+            socket.on('getProduitsError', (error) => {
+                console.error('Error fetching products:', error);
+                // Handle the error, e.g., display an error message to the user
+            });
+        
+            // Submit form to add a new product
+            document.getElementById('addProduitForm').addEventListener('submit', submitForm);
+        
+            // Function to update a product
+            function updateProduit(produitId) {
+                // Emit an event to the server to handle the update operation
+                socket.emit('updateProduit', { produitId });
+            }
+        
+            // Function to delete a product
+            function deleteProduit(produitId) {
+                // Emit an event to the server to handle the delete operation
+                socket.emit('deleteProduit', { produitId });
+            }
+        
+            // Event listener for the "Consulter" button
+            document.getElementById('consulterBtn').addEventListener('click', showProducts);
+        
+            function showProducts() {
+                // Emit getProduits to fetch and display all products
+                socket.emit('getProduits');
+            }
+        
+            function submitForm(event) {
+                event.preventDefault();
+                const name = document.getElementById('name').value;
+                const price = document.getElementById('price').value;
+                const stock = document.getElementById('stock').value;
+        
+                // Send data to the server to handle database insertion
+                socket.emit('msg', { type: 'produit', object: { name, price, stock } });
+            }
+        
+            // Custom jQuery contains case-insensitive
+            jQuery.expr[':'].contains = function (a, i, m) {
+                return jQuery(a).text().toUpperCase().indexOf(m[3].toUpperCase()) >= 0;
+            };
+        });
+        </script>
+        
+
+</body>
+
+</html>
