@@ -139,6 +139,21 @@ io.on("connection", (socket) => {
   });
 
 
+  socket.on("addition", (data) => {
+    addevent(data);
+    io.emit("addition", data);
+});
+socket.on("affichetableau",async () => {
+    const  datas = await affichet();
+    io.emit("affichetableau", datas);
+});
+socket.on("additionticket", (data) => {
+    addticket(data);
+    additionticket(data);
+    io.emit("additionticket", data);
+});
+
+
   socket.on("disconnect", () => {
     console.log("user disconnect");
     io.emit("msg", "user disconnect");
