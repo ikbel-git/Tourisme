@@ -13,6 +13,8 @@ const restaurantrouter=require("./routes/restaurant");
 const {addevent, affichet, additionticket}=require("./controllers/eventcontroller");
 const {addticket}=require("./controllers/ticketcontroller")
 app.use(cors());
+const categorie = require("./routes/categorie");
+const animateur = require("./routes/animateur");
 const{add}=require("./controllers/restaurantcontroller");
 const { addsmallBSocket,showSmallBusinesses } = require("./controllers/smallBController");
 const { addProdSocket, updateProduit, deleteProduit,show } = require("./controllers/produitController");
@@ -31,6 +33,8 @@ app.set("view engine", "twig");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/plat",platrouter);
+app.use("/categorie", categorie);
+app.use("/animateur", animateur);
 app.use("/restaurant",restaurantrouter);
 app.use("/produit", produitRouter);
 app.use("/smallBusiness", smallBusinessRouter);
