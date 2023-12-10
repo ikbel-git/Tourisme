@@ -32,7 +32,7 @@ app.use('/classroom', classroomrouter);
 app.use('/event', eventrouter);
 app.use('/ticket', ticketrouter);
 
-
+//ghj
 const serveur =http.createServer(app);
 const io=require("socket.io")(serveur);
 
