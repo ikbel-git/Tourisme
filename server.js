@@ -8,9 +8,12 @@ const dbConfig = require("./config/db.config");
 const userRouter = require("./routes/user");
 const app = express();
 const {add}=require("./controller/chatcontroller");
+const platrouter=require("./routes/plat");
+const restaurantrouter=require("./routes/restaurant");
 const {addevent, affichet, additionticket}=require("./controllers/eventcontroller");
 const {addticket}=require("./controllers/ticketcontroller")
 app.use(cors());
+const{add}=require("./controllers/restaurantcontroller");
 const { addsmallBSocket,showSmallBusinesses } = require("./controllers/smallBController");
 const { addProdSocket, updateProduit, deleteProduit,show } = require("./controllers/produitController");
 const {
@@ -27,6 +30,8 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "twig");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use("/plat",platrouter);
+app.use("/restaurant",restaurantrouter);
 app.use("/produit", produitRouter);
 app.use("/smallBusiness", smallBusinessRouter);
 // parse requests of content-type - application/json
