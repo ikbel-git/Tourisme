@@ -7,7 +7,9 @@ const http = require("http");
 const dbConfig = require("./config/db.config");
 const userRouter = require("./routes/user");
 const app = express();
-
+const {add}=require("./controller/chatcontroller");
+const {addevent, affichet, additionticket}=require("./controller/eventcontroller");
+const {addticket}=require("./controller/ticketcontroller")
 app.use(cors());
 
 const {
@@ -15,7 +17,9 @@ const {
   show,
   add,deleteclass
 } = require("./controllers/userController");
-
+const classroomrouter= require("./routes/classroom");
+const eventrouter= require("./routes/evenement");
+const ticketrouter= require("./routes/ticket");
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "twig");
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -26,7 +30,9 @@ app.use(express.json());
 app.use("/user", userRouter);
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
-
+app.use('/classroom', classroomrouter);
+app.use('/event', eventrouter);
+app.use('/ticket', ticketrouter);
 app.use(
   cookieSession({
     name: "bezkoder-session",
